@@ -43,6 +43,6 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
         <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="2.1.177" />
         <PackageReference Include="Soenneker.SendGrid.Client" Version="2.1.13" />
-        <PackageReference Include="Soenneker.Utils.Json" Version="2.1.494" />
+        <PackageReference Include="Soenneker.Utils.Json" Version="2.1.495" />
     </ItemGroup>
 </Project>
