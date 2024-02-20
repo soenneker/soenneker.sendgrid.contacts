@@ -95,6 +95,26 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         return result;
     }
 
+    public async ValueTask<SendGridContactsSearchResponse> Search(string email, string listId)
+    {
+        SendGridClient client = await _sendGridClientUtil.Get();
+
+        Dictionary<string, string> body = new Dictionary<string, string> {{"query", $"email = '{email}' AND CONTAINS(list_ids, '{listId}')"}};
+
+        var json = JsonUtil.Serialize(body);
+
+        Response response = await client.RequestAsync(
+            method: BaseClient.Method.POST,
+            urlPath: "marketing/contacts/search",
+            requestBody: json
+        );
+
+        string responseBody = await response.Body.ReadAsStringAsync();
+         var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(responseBody)!;
+
+        return result;
+    }
+
     public async ValueTask<SendGridContactsGetByEmailResponse> Get(List<string> emails)
     {
         var request = new SendGridContactsGetByEmailRequest

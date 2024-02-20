@@ -50,4 +50,6 @@ public interface ISendGridContactsUtil
     /// <param name="emails">The email addresses of the contacts.</param>
     /// <returns>A response containing information about the contacts.</returns>
     ValueTask<SendGridContactsGetByEmailResponse> Get(List<string> emails);
+
+    ValueTask<SendGridContactsSearchResponse> Search(string email, string listId);
 }
