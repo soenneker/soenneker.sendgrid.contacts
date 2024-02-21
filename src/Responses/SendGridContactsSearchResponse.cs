@@ -5,9 +5,9 @@ namespace Soenneker.SendGrid.Contacts.Responses;
 
 public class SendGridContactsSearchResponse
 {
-    [JsonPropertyName("recipients")]
-    public List<SendGridContactsSearchRecipient> Recipients { get; set; }
+    [JsonPropertyName("result")]
+    public List<SendGridContactGetResponse>? Result { get; set; }
 
-    [JsonPropertyName("recipient_count")]
-    public int RecipientCount { get; set; }
+    [JsonPropertyName("contact_count")]
+    public int ContactCount { get; set; }
 }

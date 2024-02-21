@@ -15,14 +15,9 @@ public interface ISendGridContactsUtil
     /// </summary>
     /// <param name="request">The request containing contacts information.</param>
     /// <returns>A response containing information about the operation.</returns>
-    ValueTask<SendGridContactsJobResponse> AddOrUpdateMultiple(SendGridContactsRequest request);
+    ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request);
 
-    /// <summary>
-    /// Adds or updates a single contact in SendGrid.
-    /// </summary>
-    /// <param name="request">The request containing contacts information.</param>
-    /// <returns>A response containing information about the operation.</returns>
-    ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactRequest request);
+    ValueTask<SendGridContactGetResponse> AddAndWait(SendGridContactsRequest request);
 
     /// <summary>
     /// Deletes contacts from SendGrid.
@@ -42,14 +37,14 @@ public interface ISendGridContactsUtil
     /// </summary>
     /// <param name="id">The ID of the contact.</param>
     /// <returns>A response containing information about the contact.</returns>
-    ValueTask<SendGridContactResponse> Get(string id);
+    ValueTask<SendGridContactGetResponse> Get(string id);
 
     /// <summary>
     /// Gets information about contacts from SendGrid by email addresses.
     /// </summary>
     /// <param name="emails">The email addresses of the contacts.</param>
     /// <returns>A response containing information about the contacts.</returns>
-    ValueTask<SendGridContactsGetByEmailResponse> Get(List<string> emails);
+    ValueTask<SendGridContactsSearchResponse> Get(List<string> emails);
 
-    ValueTask<SendGridContactsSearchResponse> Search(string email, string listId);
+    ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null);
 }

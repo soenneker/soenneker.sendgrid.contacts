@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Soenneker.SendGrid.Contacts.Responses;
 
-public class SendGridContactResponse
+public class SendGridContactGetResponse
 {
     [JsonPropertyName("address_line_1")]
     public string? AddressLine1 { get; set; }

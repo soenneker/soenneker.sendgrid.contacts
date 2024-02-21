@@ -7,6 +7,13 @@ using Soenneker.Utils.Json;
 using System.Collections.Generic;
 using Soenneker.Extensions.Enumerable.String;
 using Soenneker.SendGrid.Contacts.Responses;
+using Polly.Retry;
+using Polly;
+using System;
+using System.Linq;
+using Soenneker.Utils.Random;
+using Microsoft.Extensions.Logging;
+using Soenneker.Extensions.Enumerable;
 
 namespace Soenneker.SendGrid.Contacts;
 
@@ -14,10 +21,85 @@ namespace Soenneker.SendGrid.Contacts;
 public class SendGridContactsUtil : ISendGridContactsUtil
 {
     private readonly ISendGridClientUtil _sendGridClientUtil;
+    private readonly ILogger<SendGridContactsUtil> _logger;
 
-    public SendGridContactsUtil(ISendGridClientUtil sendGridClientUtil)
+    public SendGridContactsUtil(ISendGridClientUtil sendGridClientUtil, ILogger<SendGridContactsUtil> logger)
     {
         _sendGridClientUtil = sendGridClientUtil;
+        _logger = logger;
+    }
+
+    public async ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request)
+    {
+        string? json = JsonUtil.Serialize(request);
+
+        SendGridClient client = await _sendGridClientUtil.Get();
+
+        Response response = await client.RequestAsync(
+            method: BaseClient.Method.PUT,
+            urlPath: "marketing/contacts",
+            requestBody: json
+        );
+
+        string body = await response.Body.ReadAsStringAsync();
+        var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
+
+        return result;
+    }
+
+    public async ValueTask<SendGridContactGetResponse> AddAndWait(SendGridContactsRequest request)
+    {
+        SendGridContactsJobResponse response = await AddOrUpdate(request);
+
+        string? listId = request.ListIds?.FirstOrDefault();
+
+        SendGridContactGetResponse waitResponse = await WaitForSendGridContact(request.Contacts.First().Email, listId);
+        return waitResponse;
+    }
+
+    public async ValueTask<SendGridContactGetResponse> WaitForSendGridContact(string email, string? listId = null)
+    {
+        _logger.LogInformation("*** WaitForSendGridContact *** Verifying email { email }, ListId: { listId }", email, listId);
+
+        SendGridContactGetResponse? contact = null;
+
+        try
+        {
+            AsyncRetryPolicy? retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) // exponential back-off with jitter
+                                                      + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000)),
+                    (exception, timespan, retryCount) =>
+                    {
+                        _logger.LogError(exception, "*** InternalWaitOnSendGridContact *** Failed to find SendGrid contact. Trying again in {delay}s ... count: {retryCount}",
+                            timespan.Seconds, retryCount);
+                    });
+
+            await retryPolicy.ExecuteAsync(async () => { contact = await InternalWaitOnSendGridContact(email, listId); });
+
+            return contact!;
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e, "*** WaitForSendGridContact *** Failed to wait on contact, there may be an issue");
+
+            throw;
+        }
+    }
+
+    public async ValueTask<SendGridContactGetResponse> InternalWaitOnSendGridContact(string email, string? listId = null)
+    {
+        SendGridContactsSearchResponse? response = await Search(email, listId);
+
+        if (response == null)
+            throw new Exception("Failed to find SendGrid contact");
+
+        if (response.Result.IsNullOrEmpty())
+            throw new Exception("Failed to find SendGrid contact");
+
+        _logger.LogDebug("Found SendGrid contact! Exiting wait loop");
+
+        return response.Result.FirstOrDefault();
     }
 
     public async ValueTask<SendGridContactsJobResponse> AddOrUpdateMultiple(SendGridContactsRequest request)
@@ -36,16 +118,6 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
 
         return result;
-    }
-
-    public ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactRequest request)
-    {
-        var multipleRequest = new SendGridContactsRequest
-        {
-            Contacts = [request]
-        };
-
-        return AddOrUpdateMultiple(multipleRequest);
     }
 
     public async ValueTask<SendGridContactsJobResponse> Delete(List<string> ids)
@@ -80,7 +152,7 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         return result;
     }
 
-    public async ValueTask<SendGridContactResponse> Get(string id)
+    public async ValueTask<SendGridContactGetResponse> Get(string id)
     {
         SendGridClient client = await _sendGridClientUtil.Get();
 
@@ -90,18 +162,23 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         );
 
         string body = await response.Body.ReadAsStringAsync();
-        var result = JsonUtil.Deserialize<SendGridContactResponse>(body)!;
+        var result = JsonUtil.Deserialize<SendGridContactGetResponse>(body)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactsSearchResponse> Search(string email, string listId)
+    public async ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null)
     {
         SendGridClient client = await _sendGridClientUtil.Get();
 
-        Dictionary<string, string> body = new Dictionary<string, string> {{"query", $"email = '{email}' AND CONTAINS(list_ids, '{listId}')"}};
+        string query = $"email = '{email}'";
 
-        var json = JsonUtil.Serialize(body);
+        if (listId != null)
+            query += $" AND CONTAINS(list_ids, '{listId}')";
+
+        Dictionary<string, string> body = new Dictionary<string, string> {{"query", query}};
+
+        string? json = JsonUtil.Serialize(body);
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.POST,
@@ -110,12 +187,12 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         );
 
         string responseBody = await response.Body.ReadAsStringAsync();
-         var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(responseBody)!;
+        var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(responseBody)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactsGetByEmailResponse> Get(List<string> emails)
+    public async ValueTask<SendGridContactsSearchResponse> Get(List<string> emails)
     {
         var request = new SendGridContactsGetByEmailRequest
         {
@@ -133,7 +210,7 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         );
 
         string body = await response.Body.ReadAsStringAsync();
-        var result = JsonUtil.Deserialize<SendGridContactsGetByEmailResponse>(body)!;
+        var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(body)!;
 
         return result;
     }
