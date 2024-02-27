@@ -68,6 +68,9 @@ public class SendGridContactRequest
     [JsonPropertyName("state_province_region")]
     public string? StateProvinceRegion { get; set; }
 
+    [JsonPropertyName("phone_number")]
+    public string? PhoneNumber { get; set; }
+
     /// <summary>
     /// An object of custom field IDs and the values you want to associate with those custom fields.
     /// </summary>

@@ -63,11 +63,13 @@ public class SendGridContactsUtil : ISendGridContactsUtil
 
         SendGridContactGetResponse? contact = null;
 
+        await Task.Delay(15000);
+
         try
         {
             AsyncRetryPolicy? retryPolicy = Policy
                 .Handle<Exception>()
-                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(10 + Math.Pow(2, retryAttempt)) // exponential back-off with jitter
+                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(5 + Math.Pow(2, retryAttempt)) // exponential back-off with jitter
                                                       + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 3000)),
                     (exception, timespan, retryCount) =>
                     {

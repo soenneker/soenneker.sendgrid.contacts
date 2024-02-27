@@ -31,6 +31,7 @@ public class SendGridContactsUtilTests : FixturedUnitTest
                 {
                     FirstName = "Test",
                     LastName = "Test",
+                    PhoneNumber = "6546546541",
                     Email = Faker.Random.AlphaNumeric(10) + "@test.com"
                 }
             ]
@@ -58,12 +59,13 @@ public class SendGridContactsUtilTests : FixturedUnitTest
                 {
                     FirstName = "Test",
                     LastName = "Test",
+                    PhoneNumber = "6546546541",
                     Email = Faker.Random.AlphaNumeric(10) + "@test.com"
                 }
             ]
         };
 
-        SendGridContactGetResponse response = await _util.AddAndWait(request);
-        response.Id.Should().NotBeNull();
+        SendGridContactGetResponse? response = await _util.AddAndWait(request);
+        response!.Id.Should().NotBeNull();
     }
 }
