@@ -17,7 +17,7 @@ public interface ISendGridContactsUtil
     /// <returns>A response containing information about the operation.</returns>
     ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request);
 
-    ValueTask<SendGridContactGetResponse> AddAndWait(SendGridContactsRequest request);
+    ValueTask<SendGridContactGetResponse?> AddAndWait(SendGridContactsRequest request);
 
     /// <summary>
     /// Deletes contacts from SendGrid.
