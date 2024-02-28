@@ -59,7 +59,7 @@ public class SendGridContactsUtil : ISendGridContactsUtil
 
     private async ValueTask<SendGridContactGetResponse?> WaitForSendGridContact(string email, string? listId = null)
     {
-        _logger.LogInformation("*** WaitForSendGridContact *** Verifying email { email }, ListId: { listId }", email, listId);
+        _logger.LogInformation("*** WaitForSendGridContact *** Verifying email ({email}) for list ({listId})", email, listId);
 
         SendGridContactGetResponse? contact = null;
 
