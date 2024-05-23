@@ -45,6 +45,6 @@
         <PackageReference Include="Soenneker.Extensions.Enumerable" Version="2.1.58" />
         <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="2.1.288" />
         <PackageReference Include="Soenneker.SendGrid.Client" Version="2.1.442" />
-        <PackageReference Include="Soenneker.Utils.Json" Version="2.1.834" />
+        <PackageReference Include="Soenneker.Utils.Json" Version="2.1.838" />
     </ItemGroup>
 </Project>
