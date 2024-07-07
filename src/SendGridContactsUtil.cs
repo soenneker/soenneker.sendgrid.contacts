@@ -11,9 +11,12 @@ using Polly.Retry;
 using Polly;
 using System;
 using System.Linq;
+using System.Threading;
 using Soenneker.Utils.Random;
 using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.Enumerable;
+using Soenneker.Extensions.ValueTask;
+using Soenneker.Extensions.Task;
 
 namespace Soenneker.SendGrid.Contacts;
 
@@ -29,41 +32,40 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         _logger = logger;
     }
 
-    public async ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request)
+    public async ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request, CancellationToken cancellationToken = default)
     {
         string? json = JsonUtil.Serialize(request);
 
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.PUT,
             urlPath: "marketing/contacts",
-            requestBody: json
-        );
+            requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync();
+        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactGetResponse?> AddAndWait(SendGridContactsRequest request)
+    public async ValueTask<SendGridContactGetResponse?> AddAndWait(SendGridContactsRequest request, CancellationToken cancellationToken = default)
     {
-        SendGridContactsJobResponse _ = await AddOrUpdate(request);
+        SendGridContactsJobResponse _ = await AddOrUpdate(request, cancellationToken).NoSync();
 
         string? listId = request.ListIds?.FirstOrDefault();
 
-        SendGridContactGetResponse? waitResponse = await WaitForSendGridContact(request.Contacts.First().Email, listId);
+        SendGridContactGetResponse? waitResponse = await WaitForSendGridContact(request.Contacts.First().Email, listId, cancellationToken).NoSync();
         return waitResponse;
     }
 
-    private async ValueTask<SendGridContactGetResponse?> WaitForSendGridContact(string email, string? listId = null)
+    private async ValueTask<SendGridContactGetResponse?> WaitForSendGridContact(string email, string? listId = null, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("*** WaitForSendGridContact *** Verifying email ({email}) for list ({listId})", email, listId);
 
         SendGridContactGetResponse? contact = null;
 
-        await Task.Delay(15000);
+        await Task.Delay(15000, cancellationToken).NoSync();
 
         try
         {
@@ -77,7 +79,7 @@ public class SendGridContactsUtil : ISendGridContactsUtil
                             timespan.Seconds, retryCount);
                     });
 
-            await retryPolicy.ExecuteAsync(async () => { contact = await InternalWaitOnSendGridContact(email, listId); });
+            await retryPolicy.ExecuteAsync(async () => { contact = await InternalWaitOnSendGridContact(email, listId, cancellationToken).NoSync(); }).NoSync();
 
             return contact;
         }
@@ -89,9 +91,9 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         return null;
     }
 
-    private async ValueTask<SendGridContactGetResponse> InternalWaitOnSendGridContact(string email, string? listId = null)
+    private async ValueTask<SendGridContactGetResponse> InternalWaitOnSendGridContact(string email, string? listId = null, CancellationToken cancellationToken = default)
     {
-        SendGridContactsSearchResponse? response = await Search(email, listId);
+        SendGridContactsSearchResponse? response = await Search(email, listId, cancellationToken).NoSync();
 
         if (response == null)
             throw new Exception("Failed to find SendGrid contact");
@@ -109,56 +111,53 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         return result;
     }
 
-    public async ValueTask<SendGridContactsJobResponse> Delete(List<string> ids)
+    public async ValueTask<SendGridContactsJobResponse> Delete(List<string> ids, CancellationToken cancellationToken = default)
     {
         string commaSeparatedIds = ids.ToCommaSeparatedString();
 
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.DELETE,
-            urlPath: $"marketing/contacts?ids={commaSeparatedIds}"
-        );
+            urlPath: $"marketing/contacts?ids={commaSeparatedIds}", cancellationToken: cancellationToken);
 
-        string body = await response.Body.ReadAsStringAsync();
+        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactsJobResponse> DeleteAll()
+    public async ValueTask<SendGridContactsJobResponse> DeleteAll(CancellationToken cancellationToken = default)
     {
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.DELETE,
-            urlPath: $"marketing/contacts?delete_all_contacts=true"
-        );
+            urlPath: $"marketing/contacts?delete_all_contacts=true", cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync();
+        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactGetResponse> Get(string id)
+    public async ValueTask<SendGridContactGetResponse> Get(string id, CancellationToken cancellationToken = default)
     {
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.GET,
-            urlPath: $"marketing/contacts/{id}"
-        );
+            urlPath: $"marketing/contacts/{id}", cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync();
+        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactGetResponse>(body)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null)
+    public async ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null, CancellationToken cancellationToken = default)
     {
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         string query = $"email = '{email}'";
 
@@ -172,16 +171,15 @@ public class SendGridContactsUtil : ISendGridContactsUtil
         Response response = await client.RequestAsync(
             method: BaseClient.Method.POST,
             urlPath: "marketing/contacts/search",
-            requestBody: json
-        );
+            requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string responseBody = await response.Body.ReadAsStringAsync();
+        string responseBody = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(responseBody)!;
 
         return result;
     }
 
-    public async ValueTask<SendGridContactsSearchResponse> Get(List<string> emails)
+    public async ValueTask<SendGridContactsSearchResponse> Get(List<string> emails, CancellationToken cancellationToken = default)
     {
         var request = new SendGridContactsGetByEmailRequest
         {
@@ -190,15 +188,14 @@ public class SendGridContactsUtil : ISendGridContactsUtil
 
         string? json = JsonUtil.Serialize(request);
 
-        SendGridClient client = await _sendGridClientUtil.Get();
+        SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.POST,
             urlPath: "marketing/contacts",
-            requestBody: json
-        );
+            requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync();
+        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
         var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(body)!;
 
         return result;
