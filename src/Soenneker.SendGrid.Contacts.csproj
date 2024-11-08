@@ -43,7 +43,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
         <PackageReference Include="Polly" Version="8.4.2" />
         <PackageReference Include="Soenneker.Extensions.Enumerable" Version="2.1.196" />
-        <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="2.1.569" />
+        <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="2.1.572" />
         <PackageReference Include="Soenneker.SendGrid.Client" Version="2.1.1265" />
         <PackageReference Include="Soenneker.Utils.Json" Version="2.1.1430" />
     </ItemGroup>
