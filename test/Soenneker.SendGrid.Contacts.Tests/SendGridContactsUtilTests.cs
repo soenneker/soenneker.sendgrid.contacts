@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Soenneker.Facts.Local;
 using Soenneker.SendGrid.Contacts.Responses;
 using Xunit;
-using Xunit.Abstractions;
+
 
 namespace Soenneker.SendGrid.Contacts.Tests;
 
