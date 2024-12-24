@@ -2,8 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Soenneker.Fixtures.Unit;
-using Soenneker.SendGrid.Contacts.Registrars;
 using Soenneker.Utils.Test;
+using Soenneker.SendGrid.Contacts.Registrars;
 
 namespace Soenneker.SendGrid.Contacts.Tests;
 
