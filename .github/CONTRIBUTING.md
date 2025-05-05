@@ -1,4 +1,4 @@
-# Contributing to Soenneker.SendGrid.Contacts
+﻿# Contributing to Soenneker.SendGrid.Contacts
 
 We're excited that you're interested in contributing!
 
