@@ -21,7 +21,7 @@ using Soenneker.Extensions.Task;
 namespace Soenneker.SendGrid.Contacts;
 
 /// <inheritdoc cref="ISendGridContactsUtil"/>
-public class SendGridContactsUtil : ISendGridContactsUtil
+public sealed class SendGridContactsUtil : ISendGridContactsUtil
 {
     private readonly ISendGridClientUtil _sendGridClientUtil;
     private readonly ILogger<SendGridContactsUtil> _logger;
