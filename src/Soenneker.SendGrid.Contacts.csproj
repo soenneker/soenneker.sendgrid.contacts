@@ -41,7 +41,7 @@
     <ItemGroup>
         <PackageReference Include="Polly" Version="8.6.5" />
         <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="4.0.1272" />
-        <PackageReference Include="Soenneker.SendGrid.Client" Version="4.0.2514" />
+        <PackageReference Include="Soenneker.SendGrid.Client" Version="4.0.2516" />
         <PackageReference Include="Soenneker.Utils.Json" Version="4.0.2408" />
     </ItemGroup>
 </Project>
