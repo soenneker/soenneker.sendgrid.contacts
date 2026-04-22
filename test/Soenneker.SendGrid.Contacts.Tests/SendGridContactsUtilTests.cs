@@ -1,20 +1,19 @@
 using Soenneker.SendGrid.Contacts.Abstract;
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Tests.HostedUnit;
 
 namespace Soenneker.SendGrid.Contacts.Tests;
 
-[Collection("Collection")]
-public class SendGridContactsUtilTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class SendGridContactsUtilTests : HostedUnitTest
 {
     private readonly ISendGridContactsUtil _util;
 
-    public SendGridContactsUtilTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public SendGridContactsUtilTests(Host host) : base(host)
     {
         _util = Resolve<ISendGridContactsUtil>(true);
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
 
