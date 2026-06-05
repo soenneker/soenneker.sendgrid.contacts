@@ -19,6 +19,12 @@ public interface ISendGridContactsUtil
     /// <returns>A response containing information about the operation.</returns>
     ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Adds and wait.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     ValueTask<SendGridContactGetResponse?> AddAndWait(SendGridContactsRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -51,5 +57,12 @@ public interface ISendGridContactsUtil
     /// <returns>A response containing information about the contacts.</returns>
     ValueTask<SendGridContactsSearchResponse> Get(List<string> emails, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the search operation.
+    /// </summary>
+    /// <param name="email">The email address.</param>
+    /// <param name="listId">The list id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null, CancellationToken cancellationToken = default);
 }

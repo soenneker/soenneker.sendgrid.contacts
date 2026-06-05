@@ -68,6 +68,9 @@ public class SendGridContactRequest
     [JsonPropertyName("state_province_region")]
     public string? StateProvinceRegion { get; set; }
 
+    /// <summary>
+    /// Gets or sets phone number.
+    /// </summary>
     [JsonPropertyName("phone_number")]
     public string? PhoneNumber { get; set; }
 
