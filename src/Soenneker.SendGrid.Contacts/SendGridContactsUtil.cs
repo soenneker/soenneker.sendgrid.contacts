@@ -11,6 +11,7 @@ using Polly.Retry;
 using Polly;
 using System;
 using System.Linq;
+using System.IO;
 using System.Threading;
 using Soenneker.Utils.Random;
 using Microsoft.Extensions.Logging;
@@ -43,10 +44,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             urlPath: "marketing/contacts",
             requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
-
-        return result;
+        return (await DeserializeBody<SendGridContactsJobResponse>(response, cancellationToken).NoSync())!;
     }
 
     public async ValueTask<SendGridContactGetResponse?> AddAndWait(SendGridContactsRequest request, CancellationToken cancellationToken = default)
@@ -121,10 +119,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             method: BaseClient.Method.DELETE,
             urlPath: $"marketing/contacts?ids={commaSeparatedIds}", cancellationToken: cancellationToken);
 
-        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
-
-        return result;
+        return (await DeserializeBody<SendGridContactsJobResponse>(response, cancellationToken).NoSync())!;
     }
 
     public async ValueTask<SendGridContactsJobResponse> DeleteAll(CancellationToken cancellationToken = default)
@@ -135,10 +130,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             method: BaseClient.Method.DELETE,
             urlPath: $"marketing/contacts?delete_all_contacts=true", cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactsJobResponse>(body)!;
-
-        return result;
+        return (await DeserializeBody<SendGridContactsJobResponse>(response, cancellationToken).NoSync())!;
     }
 
     public async ValueTask<SendGridContactGetResponse> Get(string id, CancellationToken cancellationToken = default)
@@ -149,10 +141,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             method: BaseClient.Method.GET,
             urlPath: $"marketing/contacts/{id}", cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactGetResponse>(body)!;
-
-        return result;
+        return (await DeserializeBody<SendGridContactGetResponse>(response, cancellationToken).NoSync())!;
     }
 
     public async ValueTask<SendGridContactsSearchResponse> Search(string email, string? listId = null, CancellationToken cancellationToken = default)
@@ -173,10 +162,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             urlPath: "marketing/contacts/search",
             requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string responseBody = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(responseBody)!;
-
-        return result;
+        return (await DeserializeBody<SendGridContactsSearchResponse>(response, cancellationToken).NoSync())!;
     }
 
     public async ValueTask<SendGridContactsSearchResponse> Get(List<string> emails, CancellationToken cancellationToken = default)
@@ -195,9 +181,12 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             urlPath: "marketing/contacts",
             requestBody: json, cancellationToken: cancellationToken).NoSync();
 
-        string body = await response.Body.ReadAsStringAsync(cancellationToken).NoSync();
-        var result = JsonUtil.Deserialize<SendGridContactsSearchResponse>(body)!;
+        return (await DeserializeBody<SendGridContactsSearchResponse>(response, cancellationToken).NoSync())!;
+    }
 
-        return result;
+    private async ValueTask<T?> DeserializeBody<T>(Response response, CancellationToken cancellationToken)
+    {
+        await using Stream stream = await response.Body.ReadAsStreamAsync(cancellationToken).NoSync();
+        return await JsonUtil.Deserialize<T>(stream, _logger, cancellationToken).NoSync();
     }
 }
