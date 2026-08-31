@@ -6,7 +6,7 @@ using Soenneker.SendGrid.Contacts.Abstract;
 namespace Soenneker.SendGrid.Contacts.Registrars;
 
 /// <summary>
-/// A .NET typesafe implementation of SendGrid's Contact API
+/// Registers the SendGrid Marketing contacts client.
 /// </summary>
 public static class SendGridContactsUtilRegistrar
 {

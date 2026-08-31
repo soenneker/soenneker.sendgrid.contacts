@@ -7,7 +7,7 @@ using Soenneker.SendGrid.Contacts.Responses;
 namespace Soenneker.SendGrid.Contacts.Abstract;
 
 /// <summary>
-/// A .NET typesafe implementation of SendGrid's Contact API
+/// Adds, retrieves, searches, and deletes SendGrid Marketing contacts.
 /// </summary>
 public interface ISendGridContactsUtil
 {
@@ -20,7 +20,7 @@ public interface ISendGridContactsUtil
     ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds and wait.
+    /// Adds or updates contacts, then waits until the first contact can be retrieved.
     /// </summary>
     /// <param name="request">The request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -58,7 +58,7 @@ public interface ISendGridContactsUtil
     ValueTask<SendGridContactsSearchResponse> Get(List<string> emails, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes the search operation.
+    /// Searches for a contact by email address and optional list.
     /// </summary>
     /// <param name="email">The email address.</param>
     /// <param name="listId">The list id.</param>

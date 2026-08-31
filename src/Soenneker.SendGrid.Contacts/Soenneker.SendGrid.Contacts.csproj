@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Description>A .NET typesafe implementation of SendGrid's Contact API</Description>
+        <Description>Adds, retrieves, searches, and deletes SendGrid Marketing contacts.</Description>
         <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.SendGrid.Contacts</AssemblyName>
