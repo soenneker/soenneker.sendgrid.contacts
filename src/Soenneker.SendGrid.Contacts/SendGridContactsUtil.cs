@@ -7,8 +7,7 @@ using Soenneker.Utils.Json;
 using System.Collections.Generic;
 using Soenneker.Extensions.Enumerable.String;
 using Soenneker.SendGrid.Contacts.Responses;
-using Polly.Retry;
-using Polly;
+using Kevlar;
 using System;
 using System.Linq;
 using System.IO;
@@ -66,17 +65,23 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
 
         try
         {
-            AsyncRetryPolicy? retryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(5 + Math.Pow(2, retryAttempt)) // exponential back-off with jitter
-                                                      + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 3000)),
-                    (exception, timespan, retryCount) =>
+            Shield retryShield = Shield.When<Exception>()
+                .Retry(options =>
+                {
+                    options.MaxRetries = 5;
+                    options.Backoff = Backoff.Custom(static attempt => TimeSpan.FromSeconds(5 + Math.Pow(2, attempt))
+                        + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 3000)));
+                    options.OnRetry = retry =>
                     {
-                        _logger.LogDebug(exception, "*** InternalWaitOnSendGridContact *** Failed to find SendGrid contact ({email}). Trying again in {delay}s ... count: {retryCount}", email,
-                            timespan.Seconds, retryCount);
-                    });
+                        _logger.LogDebug(retry.Exception,
+                            "*** InternalWaitOnSendGridContact *** Failed to find SendGrid contact ({email}). Trying again in {delay}s ... count: {retryCount}",
+                            email, retry.Delay.TotalSeconds, retry.AttemptNumber + 1);
+                        return default;
+                    };
+                });
 
-            await retryPolicy.ExecuteAsync(async () => { contact = await InternalWaitOnSendGridContact(email, listId, cancellationToken).NoSync(); }).NoSync();
+            await retryShield.ExecuteAsync(async token => { contact = await InternalWaitOnSendGridContact(email, listId, token).NoSync(); }, cancellationToken)
+                             .NoSync();
 
             return contact;
         }
