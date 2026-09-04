@@ -20,6 +20,7 @@ using Soenneker.Extensions.Task;
 
 namespace Soenneker.SendGrid.Contacts;
 
+/// <inheritdoc cref="ISendGridContactsUtil" />
 public sealed class SendGridContactsUtil : ISendGridContactsUtil
 {
     private readonly ISendGridClientUtil _sendGridClientUtil;
