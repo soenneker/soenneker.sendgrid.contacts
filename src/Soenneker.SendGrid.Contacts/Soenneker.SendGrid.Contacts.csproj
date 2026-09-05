@@ -45,6 +45,6 @@
         <PackageReference Include="Kevlar" Version="1.1.0" />
         <PackageReference Include="Soenneker.Extensions.Enumerable.String" Version="4.0.1433" />
         <PackageReference Include="Soenneker.SendGrid.Client" Version="4.0.2727" />
-        <PackageReference Include="Soenneker.Utils.Json" Version="4.0.2678" />
+        <PackageReference Include="Soenneker.Utils.Json" Version="4.0.2679" />
     </ItemGroup>
 </Project>
