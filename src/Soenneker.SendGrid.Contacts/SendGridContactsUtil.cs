@@ -34,7 +34,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
 
     public async ValueTask<SendGridContactsJobResponse> AddOrUpdate(SendGridContactsRequest request, CancellationToken cancellationToken = default)
     {
-        string? json = JsonUtil.Serialize(request);
+        string? json = JsonUtil.Serialize(request, LibraryJsonContext.Get<SendGridContactsRequest>());
 
         SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
@@ -160,7 +160,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
 
         Dictionary<string, string> body = new Dictionary<string, string> {{"query", query}};
 
-        string? json = JsonUtil.Serialize(body);
+        string? json = JsonUtil.Serialize(body, LibraryJsonContext.Get<Dictionary<string, string>>());
 
         Response response = await client.RequestAsync(
             method: BaseClient.Method.POST,
@@ -177,7 +177,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
             Emails = emails
         };
 
-        string? json = JsonUtil.Serialize(request);
+        string? json = JsonUtil.Serialize(request, LibraryJsonContext.Get<SendGridContactsGetByEmailRequest>());
 
         SendGridClient client = await _sendGridClientUtil.Get(cancellationToken).NoSync();
 
@@ -192,6 +192,6 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
     private async ValueTask<T?> DeserializeBody<T>(Response response, CancellationToken cancellationToken)
     {
         await using Stream stream = await response.Body.ReadAsStreamAsync(cancellationToken).NoSync();
-        return await JsonUtil.Deserialize<T>(stream, _logger, cancellationToken).NoSync();
+        return await JsonUtil.Deserialize<T>(stream, LibraryJsonContext.Get<T>(), _logger, cancellationToken).NoSync();
     }
 }
