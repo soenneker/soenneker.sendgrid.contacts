@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Soenneker.SendGrid.Client.Registrars;
+using Soenneker.SendGrid.OpenApiClientUtil.Registrars;
 using Soenneker.SendGrid.Contacts.Abstract;
 
 namespace Soenneker.SendGrid.Contacts.Registrars;
@@ -15,7 +15,7 @@ public static class SendGridContactsUtilRegistrar
     /// </summary>
     public static IServiceCollection AddSendGridContactsUtilAsSingleton(this IServiceCollection services)
     {
-        services.AddSendGridClientUtilAsSingleton();
+        services.AddSendGridOpenApiClientUtilAsSingleton();
         services.TryAddSingleton<ISendGridContactsUtil, SendGridContactsUtil>();
         return services;
     }
@@ -25,7 +25,7 @@ public static class SendGridContactsUtilRegistrar
     /// </summary>
     public static IServiceCollection AddSendGridContactsUtilAsScoped(this IServiceCollection services)
     {
-        services.AddSendGridClientUtilAsSingleton();
+        services.AddSendGridOpenApiClientUtilAsSingleton();
         services.TryAddScoped<ISendGridContactsUtil, SendGridContactsUtil>();
         return services;
     }

@@ -1,9 +1,6 @@
-using Kevlar;
-using SendGrid;
 using Soenneker.SendGrid.Contacts.Requests;
 using Soenneker.SendGrid.Contacts.Responses;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Json.Serialization;
 using System.Text.Json;
