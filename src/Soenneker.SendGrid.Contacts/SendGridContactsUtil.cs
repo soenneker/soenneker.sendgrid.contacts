@@ -45,7 +45,7 @@ public sealed class SendGridContactsUtil : ISendGridContactsUtil
         string? json = JsonUtil.Serialize(request, LibraryJsonContext.Get<SendGridContactsRequest>());
 
         ContactsRequestBuilder contacts = await GetContacts(cancellationToken).NoSync();
-        using var body = new MemoryStream(Encoding.UTF8.GetBytes(json!));
+        using var body = new StringStream(json!, Encoding.UTF8);
         IParseNode root = await new JsonParseNodeFactory().GetRootParseNodeAsync("application/json", body, cancellationToken).NoSync();
         UpdateContactRequest payload = root.GetObjectValue(UpdateContactRequest.CreateFromDiscriminatorValue)!;
         UpdateContact202Response? response = await contacts.PutAsync(payload, cancellationToken: cancellationToken).NoSync();
